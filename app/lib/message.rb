@@ -34,4 +34,8 @@ class Message
     def self.params_cannot_null
       'Params cannot null'
     end
+
+    def self.send_success
+        'Send message succesfully'
+    end
 end

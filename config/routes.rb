@@ -8,6 +8,7 @@ Rails.application.routes.draw do
     post 'login', to: 'authentication#authenticate'
 
     post 'send-message', to: 'chat#send_message'
+    get 'list-message', to: 'chat#list_message'
 
   end
   
