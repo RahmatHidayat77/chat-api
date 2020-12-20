@@ -7,6 +7,8 @@ Rails.application.routes.draw do
     post 'signup', to: 'user#create'
     post 'login', to: 'authentication#authenticate'
 
+    post 'send-message', to: 'chat#send_message'
+
   end
   
   
