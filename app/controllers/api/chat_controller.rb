@@ -94,9 +94,34 @@ class Api::ChatController < ApplicationController
     def update_message
         if update_message_params[:from_user].present? && update_message_params[:old_text].present? && update_message_params[:new_text].present? 
             user = findUser(update_message_params[:from_user])
-            Chat.where(from_user_id: user.id).where(text: update_message_params[:old_text]).update(text: update_message_params[:new_text])
+            chat = Chat.where(from_user_id: user.id).where(text: update_message_params[:old_text])
+
+            if chat.present?
+                chat.update(text: update_message_params[:new_text])
+            else
+                raise(ExceptionHandler::ParamsRequired, Message.not_found(update_message_params[:old_text]))
+            end
 
             response = { message: Message.update_success, from: update_message_params[:old_text], to: update_message_params[:new_text]}
+            json_response(response, :ok)
+        else
+            raise(ExceptionHandler::ParamsRequired, Message.params_cannot_null)
+        end
+    end
+
+    def delete_message
+        if delete_message_params[:from_user].present? && delete_message_params[:text].present?
+            user = findUser(delete_message_params[:from_user])
+
+            chat = Chat.where(from_user_id: user.id).where(text: delete_message_params[:text])
+            
+            if chat.present?
+                chat.delete_all
+            else
+                raise(ExceptionHandler::ParamsRequired, Message.not_found(delete_message_params[:text]))
+            end
+
+            response = { message: Message.delete_success, text: delete_message_params[:text]}
             json_response(response, :ok)
         else
             raise(ExceptionHandler::ParamsRequired, Message.params_cannot_null)
@@ -119,6 +144,10 @@ class Api::ChatController < ApplicationController
 
     def update_message_params
         params.permit(:from_user, :old_text, :new_text)
+    end
+
+    def delete_message_params
+        params.permit(:from_user, :text)
     end
 
     def findUser(phone)

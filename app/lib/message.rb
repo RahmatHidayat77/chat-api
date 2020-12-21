@@ -41,5 +41,9 @@ class Message
 
     def self.update_success
       'Update message succesfully'
-  end
+    end
+
+    def self.delete_success
+      'Delete message succesfully'
+    end
 end
