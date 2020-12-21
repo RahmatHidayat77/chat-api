@@ -30,6 +30,10 @@ class Api::ChatController < ApplicationController
             from = findUser(list_message_params[:from])
             to = findUser(list_message_params[:to])
             chats = Chat.where("(from_user_id = #{from.id} && to_user_id = #{to.id}) OR (from_user_id = #{to.id} && to_user_id = #{from.id})").order("created_at")
+
+            # update unread to read
+            Chat.where("from_user_id = #{to.id} && to_user_id = #{from.id}").where(read: false).update(read: true)
+            
             chats.each do |x|
                 name = ""
                 if x.from_user_id == from.id 
@@ -54,6 +58,39 @@ class Api::ChatController < ApplicationController
         end
     end
 
+    def list_all_conversation
+        response = {}
+        items = []
+        if list_all_message_params[:user].present?
+            user = findUser(list_all_message_params[:user])
+            user_id = user.id
+
+            chat_with = User.select("users.id, users.name").joins("join chats ON users.id = chats.from_user_id")
+                            .where("chats.to_user_id = #{user_id}").group("users.id, users.name")
+
+            chat_with.each do |x|
+                last_message = Chat.select("text").where("(from_user_id = #{user_id} && to_user_id = #{x.id}) OR (from_user_id = #{x.id} && to_user_id = #{user_id})").order("created_at").last
+
+                unread_count = Chat.where("(from_user_id = #{user_id} && to_user_id = #{x.id}) OR (from_user_id = #{x.id} && to_user_id = #{user_id})").where(read: false).count
+
+                chat = {
+                    from: user.name,
+                    to: x.name,
+                    last_message: last_message.text,
+                    unread_count: unread_count
+                }
+
+                items.push(chat)
+            end 
+            
+            response[:user_name] = user.name
+            response[:summary_all_conversation] = items
+            json_response(response, :ok)
+        else
+            raise(ExceptionHandler::ParamsRequired, Message.params_cannot_null)
+        end
+    end
+
     private
 
     def send_message_params
@@ -62,6 +99,10 @@ class Api::ChatController < ApplicationController
 
     def list_message_params
         params.permit(:from, :to)
+    end
+
+    def list_all_message_params
+        params.permit(:user)
     end
 
     def findUser(phone)

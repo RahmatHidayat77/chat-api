@@ -9,6 +9,7 @@ Rails.application.routes.draw do
 
     post 'send-message', to: 'chat#send_message'
     get 'list-message', to: 'chat#list_message'
+    get 'list-all-conversation', to: 'chat#list_all_conversation'
 
   end
   
