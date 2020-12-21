@@ -91,6 +91,18 @@ class Api::ChatController < ApplicationController
         end
     end
 
+    def update_message
+        if update_message_params[:from_user].present? && update_message_params[:old_text].present? && update_message_params[:new_text].present? 
+            user = findUser(update_message_params[:from_user])
+            Chat.where(from_user_id: user.id).where(text: update_message_params[:old_text]).update(text: update_message_params[:new_text])
+
+            response = { message: Message.update_success, from: update_message_params[:old_text], to: update_message_params[:new_text]}
+            json_response(response, :ok)
+        else
+            raise(ExceptionHandler::ParamsRequired, Message.params_cannot_null)
+        end
+    end
+
     private
 
     def send_message_params
@@ -103,6 +115,10 @@ class Api::ChatController < ApplicationController
 
     def list_all_message_params
         params.permit(:user)
+    end
+
+    def update_message_params
+        params.permit(:from_user, :old_text, :new_text)
     end
 
     def findUser(phone)

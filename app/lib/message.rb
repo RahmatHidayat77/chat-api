@@ -38,4 +38,8 @@ class Message
     def self.send_success
         'Send message succesfully'
     end
+
+    def self.update_success
+      'Update message succesfully'
+  end
 end
