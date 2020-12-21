@@ -35,7 +35,7 @@ params (example) :
 }
 ```
 
-* `/api/auth/login` (POST) ---> use to login into app, and get bearer token   
+* `/api/login` (POST) ---> use to login into app, and get bearer token   
 params (example) :    
 ```
 {
