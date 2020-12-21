@@ -24,11 +24,31 @@ class Api::ChatController < ApplicationController
     end
 
     def list_message
+        response = {}
+        items = []
         if list_message_params[:from].present? && list_message_params[:to].present?
             from = findUser(list_message_params[:from])
             to = findUser(list_message_params[:to])
-            chats = Chat.where(from_user_id: from.id, to_user_id: to.id)
-            p chats
+            chats = Chat.where("(from_user_id = #{from.id} && to_user_id = #{to.id}) OR (from_user_id = #{to.id} && to_user_id = #{from.id})").order("created_at")
+            chats.each do |x|
+                name = ""
+                if x.from_user_id == from.id 
+                    name = from.name
+                else
+                    name = to.name
+                end
+
+                chat = {
+                    name: name,
+                    text: x.text,
+                    time: x.created_at.strftime("%d/%m/%Y %k:%M")
+                }
+
+                items.push(chat)
+            end 
+            
+            response[:list_message] = items
+            json_response(response, :ok)
         else
             raise(ExceptionHandler::ParamsRequired, Message.params_cannot_null)
         end
